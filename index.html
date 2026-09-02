@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SoD Citizen Viewer</title>
+</head>
+<body>
+<input type="file" id="cityFile" accept=".cit, .citb"/>
+<p>Selected File: <span id="fileNameDisplay">None</span></p>
+
+<script>
+        // Reference the HTML elements
+        const fileInput = document.getElementById('myFile');
+        const nameDisplay = document.getElementById('fileNameDisplay');
+
+        // Listen for when the user selects a file
+        fileInput.addEventListener('change', function() {
+            // Check if at least one file was selected
+            if (this.files.length > 0) {
+                // Get the first file's name
+                const selectedFileName = this.files[0].name;
+                
+                // Display it on the page
+                nameDisplay.textContent = selectedFileName;
+            } else {
+                nameDisplay.textContent = "None";
+            }
+        });
+    </script>
+
+</body>
+</html>
