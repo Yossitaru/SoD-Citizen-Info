@@ -1,33 +1,344 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="UTF-8>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SoD Citizen Viewer</title>
-</head>
-<body>
-<input type="file" id="cityFile" accept=".cit, .citb"/>
-<p>Selected File: <span id="fileNameDisplay">None</span></p>
+	<head>
+		<link rel="stylesheet" href="styles.css">
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>SoD Citizen Viewer</title>
+	</head>
 
-<script>
-        // Reference the HTML elements
-        const fileInput = document.getElementById('myFile');
-        const nameDisplay = document.getElementById('fileNameDisplay');
+	<body>
+	<input type="file" id="cityFile" accept=".cit, .citb"/>
+	<p>Selected File: <span id="fileNameDisplay">None</span></p>
 
-        // Listen for when the user selects a file
-        fileInput.addEventListener('change', function() {
-            // Check if at least one file was selected
-            if (this.files.length > 0) {
-                // Get the first file's name
-                const selectedFileName = this.files[0].name;
-                
-                // Display it on the page
-                nameDisplay.textContent = selectedFileName;
-            } else {
-                nameDisplay.textContent = "None";
-            }
-        });
-    </script>
+	<div class="box">
+		<label for="objectDropdown">Select a person to view details:</label>
+		<select id="objectDropdown" disabled>
+			<option value="">Choose a city file first</option>
+		</select>
+	</div>
+	
+	<div id="tabCont">
+		<table id="basicTable">
+			<thead>
+				<tr>
+					<th scope="col" colspan="2">Basic Data</th>
+				</tr>
+			</thead>
+			<tbody id="basicBod">
+				<tr id="nameRow">
+					<th>Name</th>
+					<td id="citName"></td>
+				</tr>
+				<tr id="birthRow">
+					<th>Birthdate</th>
+					<td id="citBirth"></td>
+				</tr>
+				<tr id="heightRow">
+					<th>Height</th>
+					<td id="citHeight"></td>
+				</tr>
+				<tr id="weightRow">
+					<th>Weight</th>
+					<td id="citWeight"></td>
+				</tr>
+			</tbody>
+		</table>
 
-</body>
+		<table id="relatTable">
+			<thead>
+				<tr>
+					<th scope="col" colspan="3">People I Know</th>
+				</tr>
+			</thead>
+			<tbody id="relatBody">
+				<tr id="partRow">
+					<th>Partner</th>
+					<td id="partName"></td>
+					<td id="partAnni"></td>
+				</tr>
+				<tr id="paraRow">
+					<th>Paramour</th>
+					<td id="paraName"></td>
+				</tr>
+				<tr>
+					<th scope="col" colspan="3">Others</th>
+				</tr>
+			</tbody>
+		</table>
+
+		<table id="hexacoTable">
+			<thead>
+				<tr>
+					<th scope="col" colspan="2">HEXACO Scores</th>
+				</tr>
+			</thead>
+			<tbody id="hexacoBod">
+				<tr id="hRow">
+					<th>Humility</th>
+					<td id="humility"></td>
+				</tr>
+				<tr id="eRow">
+					<th>Emotionality</th>
+					<td id="emotion"></td>
+				</tr>
+				<tr id="xRow">
+					<th>Extroversion</th>
+					<td id="extravert"></th>
+				</tr>
+				<tr id="aRow">
+					<th>Agreeableness</th>
+					<td id="agreeable"></th>
+				</tr>
+				<tr id="cRow">
+					<th>Conscientiousness</th>
+					<td id="conscioent"></th>
+				</tr>
+				<tr id="oRow">
+					<th>Openness</th>
+					<td id="creativity"></th>
+				</tr>
+			</tbody>
+		</table>
+
+		<table id="traitTable">
+			<thead>
+				<tr>
+					<th scope="col" colspan="4">Traits</th>
+				</tr>
+			</thead>
+			<tbody id="traitBody">
+			</tbody>
+		</table>
+
+		<table id="faveTable">
+			<thead>
+				<tr>
+					<th scope="col" colspan="41">Favorites</th>
+				</tr>
+			</thead>
+			<tbody id="favBody">
+			</tbody>
+		</table>
+	</div>
+
+<script defer>
+	//Classes
+	class CitTrait {
+		constructor(name, reason, date) {
+			this.name = name;
+			this.reason = reason;
+			this.date = date;
+		}
+	}
+
+	class Citizen {
+		constructor(birthDate, height, weight, name, partner, paramour, anniversary, humility, emotionality, extraversion, agreeableness, conscientiousness, creativity, friendCoworker, traits, favorites, favoriteRanks) {
+			this.birthDate = birthDate;
+			this.height = height;
+			this.weight = weight;
+			this.name = name;
+			this.partner = partner;
+			this.paramour = paramour;
+			this.anniversary = anniversary;
+			this.humility = humility;
+			this.emotionality = emotionality;
+			this.extraversion = extraversion;
+			this.agreeableness = agreeableness;
+			this.conscientiousness = conscientiousness;
+			this.creativity = creativity;
+			this.friendCoworker = friendCoworker;
+			this.traits = traits;
+			this.favorites = favorites;
+			this.favoriteRanks = favoriteRanks;
+		}
+	}
+
+	//HTML References
+        const fileInput = document.getElementById('cityFile');
+        const fileNameDisplay = document.getElementById('fileNameDisplay');
+	const dropdown = document.getElementById('objectDropdown');
+
+	//Variables
+	let citizenArray = [];
+	let fileExtension = "";
+	let fileString = "";
+	let cityFile;
+
+	function decodeFile(file) {
+		
+	}
+	
+
+	function readFileAsString(file) {
+		return new Promise((resolve, reject) => {
+			if (!file) {
+				reject("No file provided");
+				return;
+			}
+			const reader = new FileReader();
+			reader.onload = (event) => resolve(event.target.result);
+			reader.onerror = (error) => reject(error);
+			reader.readAsText(file);
+		});
+	}
+        
+	function processStringIntoClassObjects(textData) {
+		const objectsArray = [];
+		let citBlockHolder;
+		const stLocator = [];
+		const edLocator = [];
+		let pos = 0;
+		while(pos != -1) {
+			pos = textData.indexOf("humanID", pos);
+			if(pos != -1){stLocator.push(pos);}
+			else{break;}
+			pos = textData.indexOf("favCat", pos);
+			if(pos != -1){edLocator.push(pos);}
+		}
+		
+		stLocator.forEach((start, index) => {
+			const end = edLocator[index];
+			citBlockHolder = textData.substring(start, end);
+			const birthday = citBlockHolder.substring(citBlockHolder.search("birthday") + 11, citBlockHolder.indexOf(',', citBlockHolder.search("birthday")) - 1);
+			const height = citBlockHolder.substring(citBlockHolder.search("heightCM") + 10, citBlockHolder.indexOf(',', citBlockHolder.search("heightCM")));
+			const weight = citBlockHolder.substring(citBlockHolder.search("weightKG") + 10, citBlockHolder.indexOf(',', citBlockHolder.search("weightKG")));
+			const name = citBlockHolder.substring(citBlockHolder.search("citizenName") + 14, citBlockHolder.indexOf(',', citBlockHolder.search("citizenName")) - 1);
+			const partner = citBlockHolder.substring(citBlockHolder.search("partner") + 9, citBlockHolder.indexOf(',', citBlockHolder.search("partner")));
+			const paramour = citBlockHolder.substring(citBlockHolder.search("paramour") + 10, citBlockHolder.indexOf(',', citBlockHolder.search("paramour")));
+			const anniversary = citBlockHolder.substring(citBlockHolder.search("anniversary") + 14, citBlockHolder.indexOf(',', citBlockHolder.search("anniversary")) - 1);
+			const humility = citBlockHolder.substring(citBlockHolder.search("humility") + 10, citBlockHolder.indexOf(',', citBlockHolder.search("humility")));
+			const emotionality = citBlockHolder.substring(citBlockHolder.search("emotionality") + 14, citBlockHolder.indexOf(',', citBlockHolder.search("emotionality")));
+			const extraversion = citBlockHolder.substring(citBlockHolder.search("extraversion") + 14, citBlockHolder.indexOf(',', citBlockHolder.search("extraversion")));
+			const agreeableness = citBlockHolder.substring(citBlockHolder.search("agreeableness") + 15, citBlockHolder.indexOf(',', citBlockHolder.search("agreeableness")));
+			const conscientiousness = citBlockHolder.substring(citBlockHolder.search("conscientiousness") + 19, citBlockHolder.indexOf(',', citBlockHolder.search("conscientiousness")));
+			const creativity = citBlockHolder.substring(citBlockHolder.search("creativity") + 12, citBlockHolder.indexOf(',', citBlockHolder.search("creativity")));
+			//Acquaintances
+			const acquaint = [];
+			let subSetLocs = [];
+			pos = 0;
+			while(pos != -1){
+				pos = citBlockHolder.indexOf("with", pos + 1);
+				if(pos != -1){subSetLocs.push(pos);}
+			}
+			subSetLocs.forEach((loc) => {
+				acquaint.push(citBlockHolder.substring(loc + 6, citBlockHolder.indexOf(',', loc)));
+			});
+			subSetLocs.length = 0;
+			//Traits
+			const traits = [];
+			subSetLocs = [];
+			pos = 0
+			while(pos != -1){
+				pos = citBlockHolder.indexOf("trait\"", pos + 1);
+				if(pos != -1){subSetLocs.push(pos);}
+			}
+			subSetLocs.forEach((loc) => {
+				const firstCom = citBlockHolder.indexOf(',', loc);
+				const secondCom = citBlockHolder.indexOf(',', firstCom + 1);
+				const traitName = citBlockHolder.substring(loc + 8, firstCom - 1);
+				const traitBec = citBlockHolder.substring(firstCom + 10, secondCom);
+				let traitDat = citBlockHolder.substring(secondCom + 9, citBlockHolder.indexOf(',', secondCom + 1) - 2);
+				if(traitDat == "\""){traitDat = "";}
+				traits.push(new CitTrait(traitName, traitBec, traitDat));
+			});
+			//Favorites
+			const favStr = citBlockHolder.substring(citBlockHolder.indexOf('[', citBlockHolder.indexOf("favItems")) + 2, citBlockHolder.indexOf(']', citBlockHolder.indexOf("favItems")) - 1);
+			const favItems = favStr.split("\",\"");
+			const favRankStr = citBlockHolder.substring(citBlockHolder.indexOf('[', citBlockHolder.indexOf("favItemRanks")) + 1, citBlockHolder.indexOf(']', citBlockHolder.indexOf("favItemRanks")));
+			const favRanks = favRankStr.split(",");
+			objectsArray.push(new Citizen(birthday, height, weight, name, partner, paramour, anniversary, humility, emotionality, extraversion, agreeableness, conscientiousness, creativity, acquaint, traits, favItems, favRanks));
+		});
+
+		return objectsArray;
+	}
+
+	function populateDropdown(objects) {
+		dropdown.innerHTML = '<option value="">-- Choose a Citizen --</option>';
+		if (objects.length === 0) {
+        		dropdown.disabled = true;
+		        return;
+		}
+
+		objects.forEach((obj, index) => {
+			const option = document.createElement('option');
+			option.value = index; // Use index as the identifier
+			option.textContent = obj.name; // Display name in dropdown
+			dropdown.appendChild(option);
+		});
+		dropdown.disabled = false;
+	}
+
+//Listeners
+	document.getElementById("cityFile").addEventListener('change', async (event) => {
+		const file = event.target.files[0];
+		let rawStringData;
+		if (!file) return;
+		fileExtension = file.name.substring(file.name.lastIndexOf('.') + 1);
+		document.getElementById("fileNameDisplay").textContent = fileExtension;
+		try {
+			if(fileExtension == "cit"){rawStringData = await readFileAsString(file);}
+			else {rawStringData = await decodeFile(file);}
+			citizenArray = processStringIntoClassObjects(rawStringData);
+			citizenArray.size;
+        		populateDropdown(citizenArray);
+		} catch (error) {
+			console.error(error);
+		}
+	});
+
+	document.getElementById('objectDropdown').addEventListener('change', (event) => {
+			
+		//Remove added table rows to make way for a potentially different amount of them.
+		const tempElements = document.querySelectorAll(".tempElement");
+		tempElements.forEach(element => element.remove());
+		const selectedCitizen = event.target.value;
+		if (selectedCitizen === "") {return;}
+		document.getElementById("citName").textContent = citizenArray[selectedCitizen].name;
+		document.getElementById("citBirth").textContent = citizenArray[selectedCitizen].birthDate;
+		document.getElementById("citHeight").textContent = citizenArray[selectedCitizen].height + " CM";
+		document.getElementById("citWeight").textContent = citizenArray[selectedCitizen].weight + " KG";
+		if(citizenArray[selectedCitizen].partner != "-1"){
+			document.getElementById("partName").textContent = citizenArray[Number(citizenArray[selectedCitizen].partner) - 2].name;
+		}
+		else{document.getElementById("partName").textContent = "None";}
+		document.getElementById("partAnni").textContent = citizenArray[selectedCitizen].anniversary;
+		if(citizenArray[selectedCitizen].paramour != "-1"){
+			document.getElementById("paraName").textContent = citizenArray[Number(citizenArray[selectedCitizen].paramour) - 2].name;
+		}
+		else{document.getElementById("paraName").textContent = "None"};
+		citizenArray[selectedCitizen].friendCoworker.forEach(citNum => {
+			if (citNum != citizenArray[selectedCitizen].partner && citNum != citizenArray[selectedCitizen].paramour){
+				const newRelatRow = document.getElementById("relatBody").insertRow(-1);
+				newRelatRow.classList.add("tempElement");
+				newRelatRow.insertCell(0).textContent = citizenArray[citNum - 2].name;
+			}
+		});
+		document.getElementById("humility").textContent = citizenArray[selectedCitizen].humility;
+		document.getElementById("emotion").textContent = citizenArray[selectedCitizen].emotionality;
+		document.getElementById("extravert").textContent = citizenArray[selectedCitizen].extraversion;
+		document.getElementById("agreeable").textContent = citizenArray[selectedCitizen].agreeableness;
+		document.getElementById("conscioent").textContent = citizenArray[selectedCitizen].conscientiousness;
+		document.getElementById("creativity").textContent = citizenArray[selectedCitizen].creativity;
+		citizenArray[selectedCitizen].traits.forEach(trait => {
+			const newTraitRow = document.getElementById("traitBody").insertRow(-1);
+			newTraitRow.classList.add("tempElement");
+			newTraitRow.insertCell(0).textContent = trait.name;
+			if(trait.date != "" || trait.reason != "-1"){newTraitRow.insertCell(1).textContent = trait.date;}
+			if(trait.reason != "-1"){newTraitRow.insertCell(2).textContent = " because";}
+		});
+		citizenArray[selectedCitizen].favorites.forEach((fave, index) => {
+			const faveRank = citizenArray[selectedCitizen].favoriteRanks[index];
+			const newHead = document.createElement("th");
+			newHead.textContent = fave;
+			const newFavRow = document.getElementById("favBody").insertRow(-1);
+			newFavRow.classList.add("tempElement");
+			newFavRow.appendChild(newHead);
+			newFavRow.insertCell(1).textContent = faveRank;
+		});
+	});
+
+</script>
+
+	</body>
 </html>

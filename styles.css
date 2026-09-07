@@ -1,0 +1,16 @@
+#tabCont {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	justify-content: space-evenly;
+	align-items: center;
+	align-content: center;
+	row-gap: 15px;
+	column-gap: 15px;
+ 	background-color: #ccc;
+}
+
+table{
+	background-color: #fff;  /* Keeps the items opaque */
+	flex: 1;
+}
