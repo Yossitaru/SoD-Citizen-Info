@@ -163,12 +163,7 @@
 	let citizenArray = [];
 	let fileExtension = "";
 	let fileString = "";
-	let cityFile;
-
-	function decodeFile(file) {
-		
-	}
-	
+	let cityFile;	
 
 	function readFileAsString(file) {
 		return new Promise((resolve, reject) => {
@@ -278,7 +273,14 @@
 		document.getElementById("fileNameDisplay").textContent = fileExtension;
 		try {
 			if(fileExtension == "cit"){rawStringData = await readFileAsString(file);}
-			else {rawStringData = await decodeFile(file);}
+			else {
+				const brotli = await import("https://unpkg.com/brotli-wasm@3.0.0/index.web.js?module").then(m => m.default);
+				const buffer = await file.arrayBuffer();
+				const compressDat = new Uint8Array(buffer);
+				const decomp = brotli.decompress(compressDat);
+				rawStringData = new TextDecoder("utf-8").decode(decomp);
+			}
+			
 			citizenArray = processStringIntoClassObjects(rawStringData);
 			citizenArray.size;
         		populateDropdown(citizenArray);
