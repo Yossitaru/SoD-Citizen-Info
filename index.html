@@ -5,10 +5,6 @@
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<title>SoD Citizen Viewer</title>
-		<script type="module">
-			import { decompress } from 'https://unpkg.com';
-			window.brotliDecompress = decompress;
-		</script>
 	</head>
 
 	<body>
@@ -167,7 +163,12 @@
 	let citizenArray = [];
 	let fileExtension = "";
 	let fileString = "";
-	let cityFile;	
+	let cityFile;
+
+	function decodeFile(file) {
+		
+	}
+	
 
 	function readFileAsString(file) {
 		return new Promise((resolve, reject) => {
@@ -275,34 +276,15 @@
 		if (!file) return;
 		fileExtension = file.name.substring(file.name.lastIndexOf('.') + 1);
 		document.getElementById("fileNameDisplay").textContent = fileExtension;
-		//try {
+		try {
 			if(fileExtension == "cit"){rawStringData = await readFileAsString(file);}
-			else {
-				// 1. Read the file as binary data (ArrayBuffer)
-				const arrayBuffer = await file.arrayBuffer();
-				const compressedBytes = new Uint8Array(arrayBuffer);
-
-                // 2. Decompress the Brotli bytes using the WASM library
-                // Ensure the library has loaded before calling
-				if (!window.brotliDecompress) {
-				throw new Error("Brotli decoder library is still loading. Please try again in a second.");
-			}
-				const decompressedBytes = window.brotliDecompress(compressedBytes);
-
-                // 3. Convert the decompressed binary bytes back into a text string
-				const decoder = new TextDecoder('utf-8');
-				rawStringData = decoder.decode(decompressedBytes);
-				}
-			}
-			
+			else {rawStringData = await decodeFile(file);}
 			citizenArray = processStringIntoClassObjects(rawStringData);
 			citizenArray.size;
         		populateDropdown(citizenArray);
-//		} catch (error) {
-//			if (error.message.includes("Unexpected input after the end of stream")) {
-//				console.warn("Stream ended with trailing junk data, but payload was successfully recovered.");
-//			}
-//		}
+		} catch (error) {
+			console.error(error);
+		}
 	});
 
 	document.getElementById('objectDropdown').addEventListener('change', (event) => {
