@@ -99,6 +99,25 @@
 					<td id="creativity"></th>
 				</tr>
 			</tbody>
+			<thead>
+				<tr>
+					<th scope="col" colspan="2">Sexuality Scores</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<th>I am attracted to</th>
+					<td id="attract"></td>
+				</tr>
+				<tr>
+					<th>Sexuality</th>
+					<td id="sex"></td>
+				</tr>
+				<tr>
+					<th>Homosexuality</th>
+					<td id="homo"></td>
+				</tr>
+			</tbody>
 		</table>
 
 		<table id="traitTable">
@@ -133,7 +152,7 @@
 	}
 
 	class Citizen {
-		constructor(birthDate, height, weight, name, partner, paramour, anniversary, humility, emotionality, extraversion, agreeableness, conscientiousness, creativity, friendCoworker, traits, favorites, favoriteRanks) {
+		constructor(birthDate, height, weight, name, partner, paramour, anniversary, humility, emotionality, extraversion, agreeableness, conscientiousness, creativity, attraction, sex, homo, friendCoworker, traits, favorites, favoriteRanks) {
 			this.birthDate = birthDate;
 			this.height = height;
 			this.weight = weight;
@@ -147,6 +166,9 @@
 			this.agreeableness = agreeableness;
 			this.conscientiousness = conscientiousness;
 			this.creativity = creativity;
+			this.attraction = attraction;
+			this.sex = sex;
+			this.homo = homo;
 			this.friendCoworker = friendCoworker;
 			this.traits = traits;
 			this.favorites = favorites;
@@ -213,6 +235,10 @@
 			const agreeableness = citBlockHolder.substring(citBlockHolder.search("agreeableness") + 15, citBlockHolder.indexOf(',', citBlockHolder.search("agreeableness")));
 			const conscientiousness = citBlockHolder.substring(citBlockHolder.search("conscientiousness") + 19, citBlockHolder.indexOf(',', citBlockHolder.search("conscientiousness")));
 			const creativity = citBlockHolder.substring(citBlockHolder.search("creativity") + 12, citBlockHolder.indexOf(',', citBlockHolder.search("creativity")));
+			//Sexuality
+			const attract = citBlockHolder.substring(citBlockHolder.search("attractedTo") + 14, citBlockHolder.indexOf(']', citBlockHolder.search("attractedTo")));
+			const sex = citBlockHolder.substring(citBlockHolder.search("sexuality\"") + 11, citBlockHolder.indexOf(',', citBlockHolder.search("sexuality\"")));
+			const homo = citBlockHolder.substring(citBlockHolder.search("homosexuality\"") + 15, citBlockHolder.indexOf(',', citBlockHolder.search("homosexuality\"")));
 			//Acquaintances
 			const acquaint = [];
 			let subSetLocs = [];
@@ -247,7 +273,7 @@
 			const favItems = favStr.split("\",\"");
 			const favRankStr = citBlockHolder.substring(citBlockHolder.indexOf('[', citBlockHolder.indexOf("favItemRanks")) + 1, citBlockHolder.indexOf(']', citBlockHolder.indexOf("favItemRanks")));
 			const favRanks = favRankStr.split(",");
-			objectsArray.push(new Citizen(birthday, height, weight, name, partner, paramour, anniversary, humility, emotionality, extraversion, agreeableness, conscientiousness, creativity, acquaint, traits, favItems, favRanks));
+			objectsArray.push(new Citizen(birthday, height, weight, name, partner, paramour, anniversary, humility, emotionality, extraversion, agreeableness, conscientiousness, creativity, attract, sex, homo, acquaint, traits, favItems, favRanks));
 		});
 
 		return objectsArray;
@@ -294,7 +320,7 @@
 	});
 
 	document.getElementById('objectDropdown').addEventListener('change', (event) => {
-			
+		
 		//Remove added table rows to make way for a potentially different amount of them.
 		const tempElements = document.querySelectorAll(".tempElement");
 		tempElements.forEach(element => element.remove());
@@ -326,6 +352,16 @@
 		document.getElementById("agreeable").textContent = citizenArray[selectedCitizen].agreeableness;
 		document.getElementById("conscioent").textContent = citizenArray[selectedCitizen].conscientiousness;
 		document.getElementById("creativity").textContent = citizenArray[selectedCitizen].creativity;
+		let tempStr = citizenArray[selectedCitizen].attraction;		
+		if(tempStr.length > 0){
+			tempStr = tempStr.replace("0", "Male");
+			tempStr = tempStr.replace("1", "Female");
+			tempStr = tempStr.replace("2", "NonBinary");
+		}
+		else{tempStr = "None";}
+		document.getElementById("attract").textContent = tempStr;
+		document.getElementById("sex").textContent = citizenArray[selectedCitizen].sex;
+		document.getElementById("homo").textContent = citizenArray[selectedCitizen].homo;
 		citizenArray[selectedCitizen].traits.forEach(trait => {
 			const newTraitRow = document.getElementById("traitBody").insertRow(-1);
 			newTraitRow.classList.add("tempElement");
